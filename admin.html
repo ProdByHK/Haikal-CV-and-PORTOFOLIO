@@ -589,6 +589,12 @@ input[type="color"] {
 
 <script>
 /* ══════════════════════════════════════
+   UPSTASH CONFIG
+══════════════════════════════════════ */
+const UPSTASH_URL = 'https://exciting-woodcock-67255.upstash.io';
+const UPSTASH_WRITE_TOKEN = 'gQAAAAAAAQa3AAIncDEzNzkzYzE5NTdjM2M0M2RlOTI3MTYxZjRmMDk3NmQ5NXAxNjcyNTU';
+
+/* ══════════════════════════════════════
    DEFAULT DATA (mirrors index.html)
 ══════════════════════════════════════ */
 const DEFAULT_DATA = {
@@ -659,21 +665,32 @@ const DEFAULT_DATA = {
 };
 
 /* ══════════════════════════════════════
-   STORAGE HELPERS
+   STORAGE HELPERS (Upstash REST API)
 ══════════════════════════════════════ */
-const STORAGE_KEY = 'cv_data';
 const PW_KEY = 'cv_admin_pw';
 
-function getData() {
+async function getData() {
   try {
-    const s = localStorage.getItem(STORAGE_KEY);
-    if (s) return Object.assign({}, DEFAULT_DATA, JSON.parse(s));
-  } catch(e) {}
+    const res = await fetch(`${UPSTASH_URL}/get/cv_data`, {
+      headers: { Authorization: `Bearer ${UPSTASH_WRITE_TOKEN}` }
+    });
+    const json = await res.json();
+    if (json.result) {
+      return Object.assign({}, DEFAULT_DATA, JSON.parse(json.result));
+    }
+  } catch(e) { console.warn('Upstash get failed:', e); }
   return JSON.parse(JSON.stringify(DEFAULT_DATA));
 }
 
-function setData(data) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+async function setData(data) {
+  await fetch(`${UPSTASH_URL}/set/cv_data`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${UPSTASH_WRITE_TOKEN}`,
+      'Content-Type': 'text/plain'
+    },
+    body: JSON.stringify(data)
+  });
 }
 
 function getPassword() {
@@ -752,8 +769,8 @@ function showToast(msg, isError = false) {
 /* ══════════════════════════════════════
    LOAD ALL PANELS
 ══════════════════════════════════════ */
-function loadAllPanels() {
-  const d = getData();
+async function loadAllPanels() {
+  const d = await getData();
   loadHero(d.hero);
   loadAbout(d.about);
   loadSkills(d.skills);
@@ -770,14 +787,14 @@ function loadHero(h) {
   document.getElementById('hero-title').value = h.title || '';
   document.getElementById('hero-roles').value = (h.roles || []).join('\n');
 }
-function saveHero() {
-  const d = getData();
+async function saveHero() {
+  const d = await getData();
   d.hero = {
     name: document.getElementById('hero-name').value.trim(),
     title: document.getElementById('hero-title').value.trim(),
     roles: document.getElementById('hero-roles').value.split('\n').map(r => r.trim()).filter(Boolean)
   };
-  setData(d);
+  await setData(d);
   showToast('Hero section saved!');
 }
 
@@ -787,10 +804,10 @@ function saveHero() {
 function loadAbout(a) {
   document.getElementById('about-bio').value = (a && a.bio) ? a.bio : '';
 }
-function saveAbout() {
-  const d = getData();
+async function saveAbout() {
+  const d = await getData();
   d.about = { bio: document.getElementById('about-bio').value };
-  setData(d);
+  await setData(d);
   showToast('About section saved!');
 }
 
@@ -853,10 +870,10 @@ function addChip(ci) {
   if (newInput) newInput.focus();
 }
 
-function saveSkills() {
-  const d = getData();
+async function saveSkills() {
+  const d = await getData();
   d.skills = JSON.parse(JSON.stringify(skillsData));
-  setData(d);
+  await setData(d);
   showToast('Skills saved!');
 }
 
@@ -930,10 +947,10 @@ function removeBullet(ji, bi) {
   expData[ji].bullets.splice(bi, 1);
   renderExperienceEditor();
 }
-function saveExperience() {
-  const d = getData();
+async function saveExperience() {
+  const d = await getData();
   d.experience = JSON.parse(JSON.stringify(expData));
-  setData(d);
+  await setData(d);
   showToast('Experience saved!');
 }
 
@@ -1004,10 +1021,10 @@ function removePort(pi) {
   portData.splice(pi, 1);
   renderPortfolioEditor();
 }
-function savePortfolio() {
-  const d = getData();
+async function savePortfolio() {
+  const d = await getData();
   d.portfolio = JSON.parse(JSON.stringify(portData));
-  setData(d);
+  await setData(d);
   showToast('Portfolio saved!');
 }
 
@@ -1021,15 +1038,15 @@ function loadContact(c) {
   document.getElementById('contact-behance').value = d.behance || '';
   document.getElementById('contact-instagram').value = d.instagram || '';
 }
-function saveContact() {
-  const d = getData();
+async function saveContact() {
+  const d = await getData();
   d.contact = {
     email: document.getElementById('contact-email').value.trim(),
     linkedin: document.getElementById('contact-linkedin').value.trim(),
     behance: document.getElementById('contact-behance').value.trim(),
     instagram: document.getElementById('contact-instagram').value.trim()
   };
-  setData(d);
+  await setData(d);
   showToast('Contact details saved!');
 }
 
@@ -1050,10 +1067,10 @@ function changePassword() {
   showToast('Password updated successfully!');
 }
 
-function confirmReset() {
+async function confirmReset() {
   if (confirm('Are you sure? This will reset ALL CV content to the default placeholder content. This cannot be undone.')) {
-    localStorage.removeItem(STORAGE_KEY);
-    loadAllPanels();
+    await setData(JSON.parse(JSON.stringify(DEFAULT_DATA)));
+    await loadAllPanels();
     showToast('All content reset to defaults.');
   }
 }

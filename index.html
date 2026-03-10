@@ -729,6 +729,12 @@ section { padding: 120px 0; }
 
 <script>
 /* ══════════════════════════════════════
+   UPSTASH CONFIG (read-only token for public page)
+══════════════════════════════════════ */
+const UPSTASH_URL = 'https://exciting-woodcock-67255.upstash.io';
+const UPSTASH_READ_TOKEN = 'ggAAAAAAAQa3AAIgcDFSvMPD0slV8VMP6Nl7Q-PHYqOAu_CFCVSruprTlrIuwg';
+
+/* ══════════════════════════════════════
    DEFAULT DATA
 ══════════════════════════════════════ */
 const DEFAULT_DATA = {
@@ -799,21 +805,26 @@ const DEFAULT_DATA = {
 };
 
 /* ══════════════════════════════════════
-   LOAD DATA FROM LOCALSTORAGE
+   LOAD DATA FROM UPSTASH
 ══════════════════════════════════════ */
-function getData() {
+async function getData() {
   try {
-    const saved = localStorage.getItem('cv_data');
-    if (saved) return JSON.parse(saved);
-  } catch(e) {}
-  return DEFAULT_DATA;
+    const res = await fetch(`${UPSTASH_URL}/get/cv_data`, {
+      headers: { Authorization: `Bearer ${UPSTASH_READ_TOKEN}` }
+    });
+    const json = await res.json();
+    if (json.result) {
+      return Object.assign({}, DEFAULT_DATA, JSON.parse(json.result));
+    }
+  } catch(e) { console.warn('Upstash fetch failed, using defaults:', e); }
+  return JSON.parse(JSON.stringify(DEFAULT_DATA));
 }
 
 /* ══════════════════════════════════════
    RENDER DYNAMIC CONTENT
 ══════════════════════════════════════ */
-function renderAll() {
-  const d = getData();
+async function renderAll() {
+  const d = await getData();
   renderHero(d.hero);
   renderAbout(d.about);
   renderSkills(d.skills);
@@ -1226,9 +1237,10 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
 /* ══════════════════════════════════════
    INIT
 ══════════════════════════════════════ */
-renderAll();
-// Small delay to allow fonts to load before running observer
-setTimeout(initReveal, 100);
+renderAll().then(() => {
+  // Small delay to allow fonts to load before running observer
+  setTimeout(initReveal, 100);
+});
 </script>
 </body>
 </html>
