@@ -983,6 +983,11 @@ function renderHero(h) {
   const initials = parts.map(p => p[0]).join('');
   document.getElementById('nav-logo').innerHTML = initials[0] + '<span>.</span>' + (initials[1] || '');
   document.getElementById('about-initials').textContent = initials;
+  // Update browser tab title + meta
+  const role = h.title || 'Creative Designer';
+  document.title = name + ' — ' + role;
+  const metaDesc = document.querySelector('meta[name="description"]');
+  if (metaDesc) metaDesc.setAttribute('content', name + ' — ' + role + '. Portfolio and CV.');
   document.getElementById('about-name-card').textContent = name;
   document.getElementById('about-role-card').textContent = h.title || 'Creative Designer';
   document.querySelector('.hero-eyebrow').textContent = 'Portfolio — ' + new Date().getFullYear();
