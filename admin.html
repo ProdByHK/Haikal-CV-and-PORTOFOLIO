@@ -576,6 +576,55 @@ input[type="color"] {
         </div>
         <button class="btn btn-save" onclick="saveAbout()">Save Changes</button>
       </div>
+
+      <!-- Stats -->
+      <div class="panel-section">
+        <div class="panel-section-title">About Stats</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Years Experience</label>
+            <input type="text" class="form-input" id="stat-years" placeholder="5+">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Projects Delivered</label>
+            <input type="text" class="form-input" id="stat-projects" placeholder="60+">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Happy Clients</label>
+            <input type="text" class="form-input" id="stat-clients" placeholder="30+">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Awards Won</label>
+            <input type="text" class="form-input" id="stat-awards" placeholder="12">
+          </div>
+        </div>
+        <button class="btn btn-save" onclick="saveAbout()">Save Changes</button>
+      </div>
+
+      <!-- Photo -->
+      <div class="panel-section">
+        <div class="panel-section-title">Profile Photo</div>
+        <div style="display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap">
+          <div id="photo-preview-wrap" style="width:140px;height:170px;background:var(--surface2);border:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden">
+            <span id="photo-preview-initials" style="font-family:var(--font-head);font-size:36px;color:var(--muted);opacity:0.4">AM</span>
+            <img id="photo-preview-img" alt="Preview" style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
+          </div>
+          <div style="flex:1">
+            <div class="form-group">
+              <label class="form-label">Upload Photo</label>
+              <input type="file" id="photo-upload" accept="image/*" style="display:none" onchange="handlePhotoUpload(event)">
+              <button class="btn btn-add" onclick="document.getElementById('photo-upload').click()">📁 Choose Image</button>
+              <p class="form-hint" style="margin-top:8px">Recommended: square image, JPG or PNG. Will be compressed automatically.</p>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <button class="btn btn-save" onclick="saveAbout()">Save Changes</button>
+              <button class="btn btn-remove" onclick="removePhoto()">✕ Remove Photo</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- ══ PANEL: SKILLS ══ -->
@@ -705,7 +754,9 @@ const DEFAULT_DATA = {
     roles: ["Creative Designer", "Brand Strategist", "Visual Storyteller"]
   },
   about: {
-    bio: "I craft <strong>bold visual identities</strong> and digital experiences that people remember. Based in [City], working worldwide.\n\nEvery project starts with a simple idea: what story needs to be told, and how can design make it unforgettable?"
+    bio: "I craft <strong>bold visual identities</strong> and digital experiences that people remember. Based in [City], working worldwide.\n\nEvery project starts with a simple idea: what story needs to be told, and how can design make it unforgettable?",
+    stats: { years: "5+", projects: "60+", clients: "30+", awards: "12" },
+    photo: null
   },
   skills: [
     { category: "Design Tools", items: ["Figma", "Adobe Suite", "Illustrator", "Photoshop"] },
@@ -902,14 +953,86 @@ async function saveHero() {
 /* ══════════════════════════════════════
    ABOUT PANEL
 ══════════════════════════════════════ */
+let pendingPhoto = undefined; // undefined = no change, null = remove, string = new base64
+
 function loadAbout(a) {
   document.getElementById('about-bio').value = (a && a.bio) ? a.bio : '';
+  const s = (a && a.stats) || DEFAULT_DATA.about.stats;
+  document.getElementById('stat-years').value = s.years || '';
+  document.getElementById('stat-projects').value = s.projects || '';
+  document.getElementById('stat-clients').value = s.clients || '';
+  document.getElementById('stat-awards').value = s.awards || '';
+  // Photo
+  pendingPhoto = undefined;
+  const initEl = document.getElementById('photo-preview-initials');
+  const imgEl = document.getElementById('photo-preview-img');
+  if (a && a.photo) {
+    imgEl.src = a.photo; imgEl.style.display = 'block';
+    initEl.style.display = 'none';
+  } else {
+    imgEl.style.display = 'none';
+    initEl.style.display = 'block';
+    // Show current initials
+    const name = document.getElementById('hero-name') && document.getElementById('hero-name').value;
+    if (name) { const parts = name.split(' '); initEl.textContent = parts.map(p=>p[0]).join(''); }
+  }
 }
+
 async function saveAbout() {
   const d = await getData();
-  d.about = { bio: document.getElementById('about-bio').value };
+  d.about = {
+    bio: document.getElementById('about-bio').value,
+    stats: {
+      years: document.getElementById('stat-years').value.trim(),
+      projects: document.getElementById('stat-projects').value.trim(),
+      clients: document.getElementById('stat-clients').value.trim(),
+      awards: document.getElementById('stat-awards').value.trim()
+    },
+    photo: pendingPhoto !== undefined ? pendingPhoto : (d.about && d.about.photo ? d.about.photo : null)
+  };
   await setData(d);
+  pendingPhoto = undefined;
   showToast('About section saved!');
+}
+
+function handlePhotoUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    const img = new Image();
+    img.onload = function() {
+      // Compress: max 480px, JPEG 0.82
+      const MAX = 480;
+      let w = img.width, h = img.height;
+      if (w > h && w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+      else if (h > w && h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
+      else if (w === h && w > MAX) { w = h = MAX; }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      const b64 = canvas.toDataURL('image/jpeg', 0.82);
+      pendingPhoto = b64;
+      // Show preview
+      const imgEl = document.getElementById('photo-preview-img');
+      const initEl = document.getElementById('photo-preview-initials');
+      imgEl.src = b64; imgEl.style.display = 'block';
+      initEl.style.display = 'none';
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+  // Reset input so same file can be re-picked
+  e.target.value = '';
+}
+
+function removePhoto() {
+  pendingPhoto = null;
+  const imgEl = document.getElementById('photo-preview-img');
+  const initEl = document.getElementById('photo-preview-initials');
+  imgEl.src = ''; imgEl.style.display = 'none';
+  initEl.style.display = 'block';
+  showToast('Photo removed — click Save to confirm.');
 }
 
 /* ══════════════════════════════════════
