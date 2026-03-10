@@ -842,13 +842,7 @@ section { padding: 120px 0; }
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>
       <span id="contact-email-text">hello@alexmonroe.com</span>
     </a>
-    <ul class="social-row" id="social-row">
-      <li><a href="#" class="hoverable" id="social-linkedin" aria-label="LinkedIn" target="_blank" rel="noopener">in</a></li>
-      <li><a href="#" class="hoverable" id="social-behance" aria-label="Behance" target="_blank" rel="noopener">Bē</a></li>
-      <li><a href="#" class="hoverable" id="social-instagram" aria-label="Instagram" target="_blank" rel="noopener">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
-      </a></li>
-    </ul>
+    <ul class="social-row" id="social-row"></ul>
     <div class="contact-footer">
       <span id="footer-name">Alex Monroe</span> &nbsp;·&nbsp; © <span id="footer-year">2024</span> &nbsp;·&nbsp; All rights reserved
     </div>
@@ -928,9 +922,11 @@ const DEFAULT_DATA = {
   ],
   contact: {
     email: "hello@alexmonroe.com",
-    linkedin: "#",
-    behance: "#",
-    instagram: "#"
+    socials: [
+      { platform: "LinkedIn",  icon: "in",  url: "#" },
+      { platform: "Behance",   icon: "Bē",  url: "#" },
+      { platform: "Instagram", icon: "📷",  url: "#" }
+    ]
   }
 };
 
@@ -1094,12 +1090,37 @@ function renderContact(c) {
   const emailLink = document.getElementById('contact-email-link');
   emailLink.href = 'mailto:' + (d.email || 'hello@alexmonroe.com');
   document.getElementById('contact-email-text').textContent = d.email || 'hello@alexmonroe.com';
-  const linkedin = document.getElementById('social-linkedin');
-  const behance = document.getElementById('social-behance');
-  const instagram = document.getElementById('social-instagram');
-  if (d.linkedin) linkedin.href = d.linkedin;
-  if (d.behance) behance.href = d.behance;
-  if (d.instagram) instagram.href = d.instagram;
+
+  // Build socials array — support new format and legacy flat keys
+  let socials = [];
+  if (d.socials && Array.isArray(d.socials)) {
+    socials = d.socials;
+  } else {
+    // Legacy migration
+    if (d.linkedin) socials.push({ platform: 'LinkedIn',  icon: 'in',  url: d.linkedin });
+    if (d.behance)  socials.push({ platform: 'Behance',   icon: 'Bē',  url: d.behance });
+    if (d.instagram) socials.push({ platform: 'Instagram', icon: '📷',  url: d.instagram });
+  }
+
+  const row = document.getElementById('social-row');
+  row.innerHTML = '';
+  socials.forEach((s, i) => {
+    if (!s.url || s.url === '#') return; // skip empty
+    const li = document.createElement('li');
+    const a = document.createElement('a');
+    a.href = s.url;
+    a.className = 'hoverable';
+    a.setAttribute('aria-label', s.platform || 'Social link');
+    a.setAttribute('target', '_blank');
+    a.setAttribute('rel', 'noopener');
+    a.style.opacity = '0';
+    a.style.transform = 'translateY(20px)';
+    a.textContent = s.icon || s.platform.slice(0,2);
+    li.appendChild(a);
+    row.appendChild(li);
+    // Animate in with stagger
+    setTimeout(() => { a.classList.add('social-visible'); }, 200 + i * 120);
+  });
 }
 
 /* ══════════════════════════════════════

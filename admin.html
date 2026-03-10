@@ -355,6 +355,38 @@ input[type="color"] {
 ::-webkit-scrollbar-thumb { background: var(--border); }
 ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
+/* ══ SOCIAL LINK EDITOR CARDS ══ */
+#socials-editor { display: flex; flex-direction: column; gap: 16px; }
+.social-edit-card {
+  border: 1px solid var(--border);
+  background: var(--bg);
+  overflow: hidden;
+  transition: border-color 0.3s;
+}
+.social-edit-card:hover { border-color: rgba(255,107,53,0.3); }
+.social-edit-header {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 20px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+}
+.social-edit-preview {
+  width: 38px; height: 38px;
+  background: var(--surface); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-head); font-size: 16px; font-weight: 700;
+  color: var(--text); flex-shrink: 0;
+  transition: background 0.2s, border-color 0.2s;
+}
+.social-edit-card:hover .social-edit-preview {
+  background: rgba(255,107,53,0.12);
+  border-color: var(--accent);
+}
+.social-edit-name {
+  flex: 1; font-size: 14px; font-weight: 600; color: var(--text);
+}
+.social-edit-body { padding: 18px 20px; }
+
 /* ══════════════════════════════════════
    RESPONSIVE — ADMIN PANEL
    Laptop 1024+ | Tablet 768–1023 |
@@ -676,20 +708,17 @@ input[type="color"] {
           <label class="form-label">Email Address</label>
           <input type="email" class="form-input" id="contact-email" placeholder="hello@alexmonroe.com">
         </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">LinkedIn URL</label>
-            <input type="url" class="form-input" id="contact-linkedin" placeholder="https://linkedin.com/in/...">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Behance URL</label>
-            <input type="url" class="form-input" id="contact-behance" placeholder="https://behance.net/...">
-          </div>
+        <button class="btn btn-save" onclick="saveContact()">Save Changes</button>
+      </div>
+
+      <div class="panel-section">
+        <div class="panel-section-title">
+          Social Media Links
+          <button class="btn btn-add" onclick="addSocialLink()">+ Add Platform</button>
         </div>
-        <div class="form-group">
-          <label class="form-label">Instagram URL</label>
-          <input type="url" class="form-input" id="contact-instagram" placeholder="https://instagram.com/...">
-        </div>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:20px">Add, edit, or remove social media profiles shown on your CV. Each link appears as an icon button in the contact section.</p>
+        <div id="socials-editor"></div>
+        <br>
         <button class="btn btn-save" onclick="saveContact()">Save Changes</button>
       </div>
     </div>
@@ -810,9 +839,11 @@ const DEFAULT_DATA = {
   ],
   contact: {
     email: "hello@alexmonroe.com",
-    linkedin: "#",
-    behance: "#",
-    instagram: "#"
+    socials: [
+      { platform: "LinkedIn",  icon: "in",  url: "https://linkedin.com/in/" },
+      { platform: "Behance",   icon: "Bē",  url: "https://behance.net/" },
+      { platform: "Instagram", icon: "📷",  url: "https://instagram.com/" }
+    ]
   }
 };
 
@@ -1255,22 +1286,118 @@ async function savePortfolio() {
 }
 
 /* ══════════════════════════════════════
-   CONTACT PANEL
+   CONTACT PANEL — SOCIAL LINKS MANAGER
 ══════════════════════════════════════ */
+let socialsData = [];
+
+// Popular platforms for the quick-pick dropdown
+const PLATFORM_PRESETS = [
+  { platform: 'LinkedIn',   icon: 'in',  placeholder: 'https://linkedin.com/in/username' },
+  { platform: 'Instagram',  icon: '📷',  placeholder: 'https://instagram.com/username' },
+  { platform: 'Behance',    icon: 'Bē',  placeholder: 'https://behance.net/username' },
+  { platform: 'Twitter/X',  icon: '𝕏',  placeholder: 'https://x.com/username' },
+  { platform: 'GitHub',     icon: '⌥',  placeholder: 'https://github.com/username' },
+  { platform: 'Dribbble',   icon: '◉',  placeholder: 'https://dribbble.com/username' },
+  { platform: 'YouTube',    icon: '▶',  placeholder: 'https://youtube.com/@username' },
+  { platform: 'TikTok',     icon: '♪',  placeholder: 'https://tiktok.com/@username' },
+  { platform: 'Facebook',   icon: 'f',  placeholder: 'https://facebook.com/username' },
+  { platform: 'Pinterest',  icon: '𝑃',  placeholder: 'https://pinterest.com/username' },
+  { platform: 'Snapchat',   icon: '👻', placeholder: 'https://snapchat.com/add/username' },
+  { platform: 'Discord',    icon: '◈',  placeholder: 'https://discord.gg/invite' },
+  { platform: 'Website',    icon: '🌐', placeholder: 'https://yourwebsite.com' },
+  { platform: 'Custom',     icon: '★',  placeholder: 'https://...' }
+];
+
 function loadContact(c) {
   const d = c || DEFAULT_DATA.contact;
   document.getElementById('contact-email').value = d.email || '';
-  document.getElementById('contact-linkedin').value = d.linkedin || '';
-  document.getElementById('contact-behance').value = d.behance || '';
-  document.getElementById('contact-instagram').value = d.instagram || '';
+  // Migrate legacy flat format → socials array
+  if (d.socials && Array.isArray(d.socials)) {
+    socialsData = JSON.parse(JSON.stringify(d.socials));
+  } else {
+    // Legacy: convert linkedin/behance/instagram keys
+    socialsData = [];
+    if (d.linkedin && d.linkedin !== '#') socialsData.push({ platform: 'LinkedIn',  icon: 'in',  url: d.linkedin });
+    if (d.behance  && d.behance  !== '#') socialsData.push({ platform: 'Behance',   icon: 'Bē',  url: d.behance });
+    if (d.instagram && d.instagram !== '#') socialsData.push({ platform: 'Instagram', icon: '📷',  url: d.instagram });
+  }
+  renderSocialsEditor();
 }
+
+function renderSocialsEditor() {
+  const editor = document.getElementById('socials-editor');
+  if (!editor) return;
+  if (socialsData.length === 0) {
+    editor.innerHTML = `<p style="font-size:13px;color:var(--muted);padding:16px 0">No social links yet. Click "+ Add Platform" to get started.</p>`;
+    return;
+  }
+  editor.innerHTML = '';
+  socialsData.forEach((s, idx) => {
+    const card = document.createElement('div');
+    card.className = 'social-edit-card';
+    // Platform preset selector
+    const presetOptions = PLATFORM_PRESETS.map(p =>
+      `<option value="${escHtml(p.platform)}" ${s.platform === p.platform ? 'selected' : ''}>${escHtml(p.platform)}</option>`
+    ).join('');
+    card.innerHTML = `
+      <div class="social-edit-header">
+        <div class="social-edit-preview">${escHtml(s.icon || '★')}</div>
+        <span class="social-edit-name">${escHtml(s.platform || 'Social Link')} <span style="color:var(--muted);font-size:11px;font-family:var(--font-mono)">#${idx+1}</span></span>
+        <button class="btn btn-remove" onclick="removeSocialLink(${idx})">✕ Remove</button>
+      </div>
+      <div class="social-edit-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Platform</label>
+            <select class="form-select social-platform-select" data-idx="${idx}" onchange="onPlatformPreset(${idx}, this.value)">${presetOptions}</select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Display Icon / Text <span class="form-hint" style="display:inline">(1–3 chars or emoji)</span></label>
+            <input type="text" class="form-input" value="${escHtml(s.icon)}" maxlength="4" placeholder="in"
+              oninput="socialsData[${idx}].icon=this.value; renderSocialsEditor()" style="font-family:var(--font-head);font-size:18px;text-align:center">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Profile URL</label>
+          <input type="url" class="form-input" value="${escHtml(s.url)}" placeholder="https://..."
+            oninput="socialsData[${idx}].url=this.value">
+        </div>
+      </div>`;
+    editor.appendChild(card);
+  });
+}
+
+function onPlatformPreset(idx, platformName) {
+  const preset = PLATFORM_PRESETS.find(p => p.platform === platformName);
+  if (preset) {
+    socialsData[idx].platform = preset.platform;
+    socialsData[idx].icon     = preset.icon;
+    if (!socialsData[idx].url || socialsData[idx].url === '#' || socialsData[idx].url === '') {
+      socialsData[idx].url = preset.placeholder;
+    }
+  }
+  renderSocialsEditor();
+}
+
+function addSocialLink() {
+  const preset = PLATFORM_PRESETS[0]; // default to LinkedIn
+  socialsData.push({ platform: preset.platform, icon: preset.icon, url: '' });
+  renderSocialsEditor();
+  // Scroll into view
+  const editor = document.getElementById('socials-editor');
+  if (editor) editor.lastElementChild && editor.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function removeSocialLink(idx) {
+  socialsData.splice(idx, 1);
+  renderSocialsEditor();
+}
+
 async function saveContact() {
   const d = await getData();
   d.contact = {
     email: document.getElementById('contact-email').value.trim(),
-    linkedin: document.getElementById('contact-linkedin').value.trim(),
-    behance: document.getElementById('contact-behance').value.trim(),
-    instagram: document.getElementById('contact-instagram').value.trim()
+    socials: JSON.parse(JSON.stringify(socialsData))
   };
   await setData(d);
   showToast('Contact details saved!');
