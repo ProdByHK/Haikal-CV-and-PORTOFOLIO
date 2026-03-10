@@ -633,6 +633,7 @@ section { padding: 120px 0; }
   .nav-logo { font-size: 20px; }
   .container { padding: 0 20px; }
   section { padding: 70px 0; }
+  #hero-name { font-size: clamp(40px, 10vw, 58px); }
 
   /* Hero */
   #hero { padding: 90px 20px 60px; }
@@ -674,6 +675,7 @@ section { padding: 120px 0; }
 
   /* Hero */
   #hero { padding: 80px 16px 56px; }
+  #hero-name { font-size: clamp(34px, 9vw, 48px); }
   .hero-cta-group { flex-direction: column; align-items: center; gap: 10px; margin-top: 36px; }
   .btn-primary, .btn-outline { width: 100%; max-width: 260px; text-align: center; padding: 13px 20px; }
   .hero-subtitle { flex-wrap: wrap; justify-content: center; height: auto; gap: 4px; }
@@ -1002,11 +1004,14 @@ function renderAbout(a) {
   const vals = [s.years, s.projects, s.clients, s.awards];
   const statsEl = document.getElementById('about-stats');
   if (statsEl) {
-    statsEl.innerHTML = vals.map((v, i) => `
-      <div class="stat-item">
-        <div class="stat-number">${v || '—'}</div>
-        <div class="stat-label">${labels[i]}</div>
-      </div>`).join('');
+    // Only render stats that have a non-empty value
+    statsEl.innerHTML = vals
+      .map((v, i) => v && v.trim() ? `
+        <div class="stat-item">
+          <div class="stat-number">${v.trim()}</div>
+          <div class="stat-label">${labels[i]}</div>
+        </div>` : '')
+      .join('');
   }
 
   // Photo
