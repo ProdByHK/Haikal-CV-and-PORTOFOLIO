@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Alex Monroe CV</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════
+   ROOT VARIABLES & RESET
+══════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0D0D0D;
+  --surface: #161616;
+  --surface2: #1E1E1E;
+  --text: #F0EDE6;
+  --accent: #FF6B35;
+  --muted: #888888;
+  --border: #2A2A2A;
+  --success: #28C76F;
+  --danger: #EA5455;
+  --font-head: 'Playfair Display', serif;
+  --font-body: 'Inter', sans-serif;
+  --font-mono: 'Courier New', monospace;
+  --ease-premium: cubic-bezier(0.23, 1, 0.32, 1);
+  --sidebar-width: 240px;
+}
+html, body { height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  overflow: hidden;
+  cursor: none;
+}
+
+/* ══════════════════════════════════════
+   CUSTOM CURSOR
+══════════════════════════════════════ */
+#cursor-dot {
+  position: fixed; top: 0; left: 0;
+  width: 8px; height: 8px;
+  background: var(--accent); border-radius: 50%;
+  pointer-events: none; z-index: 99999;
+  transform: translate(-50%, -50%);
+  transition: width 0.2s, height 0.2s, background 0.2s;
+}
+#cursor-ring {
+  position: fixed; top: 0; left: 0;
+  width: 32px; height: 32px;
+  border: 1.5px solid rgba(255,107,53,0.5);
+  border-radius: 50%;
+  pointer-events: none; z-index: 99998;
+  transform: translate(-50%, -50%);
+}
+body.cursor-hover #cursor-dot { width: 12px; height: 12px; }
+body.cursor-hover #cursor-ring { width: 48px; height: 48px; border-color: var(--accent); }
+
+/* ══════════════════════════════════════
+   PASSWORD SCREEN
+══════════════════════════════════════ */
+#password-screen {
+  position: fixed; inset: 0; z-index: 5000;
+  background: var(--bg);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 32px;
+  transition: opacity 0.5s, visibility 0.5s;
+}
+#password-screen.hidden { opacity: 0; visibility: hidden; }
+.pw-logo {
+  font-family: var(--font-head); font-size: 32px; font-weight: 700;
+  color: var(--text);
+}
+.pw-logo span { color: var(--accent); }
+.pw-card {
+  background: var(--surface); border: 1px solid var(--border);
+  padding: 48px; width: min(420px, 92vw);
+  text-align: center;
+}
+.pw-title {
+  font-family: var(--font-head); font-size: 24px; font-weight: 700;
+  margin-bottom: 8px;
+}
+.pw-sub { font-size: 14px; color: var(--muted); margin-bottom: 32px; }
+.pw-input {
+  width: 100%; padding: 14px 16px;
+  background: var(--surface2); border: 1px solid var(--border);
+  color: var(--text); font-family: var(--font-body); font-size: 15px;
+  outline: none; transition: border-color 0.3s;
+  margin-bottom: 16px; cursor: none;
+}
+.pw-input:focus { border-color: var(--accent); }
+.pw-input::placeholder { color: var(--muted); }
+.pw-btn {
+  width: 100%; padding: 14px;
+  background: var(--accent); border: none;
+  color: var(--bg); font-size: 14px; font-weight: 600;
+  letter-spacing: 0.08em; cursor: none;
+  transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+}
+.pw-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(255,107,53,0.3); }
+.pw-error {
+  font-size: 13px; color: var(--danger);
+  margin-top: 12px; min-height: 18px;
+}
+
+/* ══════════════════════════════════════
+   MAIN PANEL LAYOUT
+══════════════════════════════════════ */
+#app {
+  display: flex; height: 100vh;
+  opacity: 0; transition: opacity 0.5s;
+}
+#app.visible { opacity: 1; }
+
+/* ══ SIDEBAR ══ */
+#sidebar {
+  width: var(--sidebar-width); flex-shrink: 0;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  overflow-y: auto;
+}
+.sidebar-logo {
+  padding: 28px 24px;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-head); font-size: 20px; font-weight: 700;
+}
+.sidebar-logo span { color: var(--accent); }
+.sidebar-label {
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--muted); letter-spacing: 0.2em; text-transform: uppercase;
+  padding: 20px 24px 8px;
+}
+.sidebar-nav { list-style: none; padding: 0 12px; flex: 1; }
+.sidebar-nav li a {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px; width: 100%;
+  color: var(--muted); text-decoration: none;
+  font-size: 13px; font-weight: 500;
+  border-radius: 0; cursor: none;
+  transition: color 0.2s, background 0.2s;
+  position: relative;
+}
+.sidebar-nav li a::before {
+  content: '';
+  position: absolute; left: 0;
+  top: 50%; transform: translateY(-50%);
+  width: 2px; height: 0;
+  background: var(--accent);
+  transition: height 0.3s var(--ease-premium);
+}
+.sidebar-nav li a.active, .sidebar-nav li a:hover { color: var(--text); background: rgba(255,107,53,0.06); }
+.sidebar-nav li a.active::before { height: 60%; }
+.sidebar-icon { font-size: 16px; width: 20px; text-align: center; }
+.sidebar-bottom {
+  padding: 20px 12px;
+  border-top: 1px solid var(--border);
+}
+.preview-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 12px; width: 100%;
+  background: var(--accent); border: none;
+  color: var(--bg); font-size: 13px; font-weight: 600;
+  letter-spacing: 0.05em; cursor: none;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.preview-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(255,107,53,0.3); }
+
+/* ══ MAIN CONTENT ══ */
+#main {
+  flex: 1; overflow-y: auto;
+  display: flex; flex-direction: column;
+}
+.main-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 24px 40px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  position: sticky; top: 0; z-index: 10;
+  flex-shrink: 0;
+}
+.topbar-title {
+  font-family: var(--font-head); font-size: 22px; font-weight: 700;
+}
+.topbar-actions { display: flex; gap: 12px; }
+.panel-content {
+  flex: 1; padding: 40px;
+  display: none;
+}
+.panel-content.active { display: block; }
+
+/* ══════════════════════════════════════
+   FORM ELEMENTS
+══════════════════════════════════════ */
+.form-group { margin-bottom: 24px; }
+.form-label {
+  display: block; font-size: 12px; font-weight: 500;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 8px;
+  font-family: var(--font-mono);
+}
+.form-input, .form-textarea, .form-select {
+  width: 100%; padding: 12px 16px;
+  background: var(--surface2); border: 1px solid var(--border);
+  color: var(--text); font-family: var(--font-body); font-size: 14px;
+  outline: none; cursor: none;
+  transition: border-color 0.3s;
+}
+.form-input:focus, .form-textarea:focus, .form-select:focus {
+  border-color: var(--accent);
+}
+.form-input::placeholder, .form-textarea::placeholder { color: var(--muted); }
+.form-textarea { resize: vertical; min-height: 120px; }
+.form-select { appearance: none; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.form-hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
+
+/* ══ SECTION DIVIDER ══ */
+.panel-section {
+  border: 1px solid var(--border);
+  background: var(--surface); padding: 28px;
+  margin-bottom: 24px;
+}
+.panel-section-title {
+  font-family: var(--font-head); font-size: 16px; font-weight: 700;
+  margin-bottom: 20px; padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+}
+
+/* ══ BUTTONS ══ */
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 20px; font-size: 13px; font-weight: 600;
+  border: none; cursor: none; letter-spacing: 0.03em;
+  transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+}
+.btn:hover { transform: translateY(-1px); }
+.btn-save { background: var(--accent); color: var(--bg); }
+.btn-save:hover { box-shadow: 0 8px 20px rgba(255,107,53,0.3); }
+.btn-add { background: var(--surface2); border: 1px solid var(--border); color: var(--text); }
+.btn-add:hover { border-color: var(--accent); color: var(--accent); }
+.btn-remove {
+  background: none; border: 1px solid var(--border);
+  color: var(--danger); padding: 6px 12px; font-size: 12px;
+}
+.btn-remove:hover { border-color: var(--danger); background: rgba(234,84,85,0.08); }
+.btn-reset { background: var(--surface2); border: 1px solid var(--border); color: var(--muted); }
+.btn-reset:hover { border-color: var(--danger); color: var(--danger); }
+.btn-danger { background: var(--danger); color: #fff; }
+
+/* ══ CHIPS EDITOR ══ */
+.chips-editor { display: flex; flex-direction: column; gap: 24px; }
+.skill-cat-block {
+  border: 1px solid var(--border); padding: 20px;
+  background: var(--bg);
+}
+.skill-cat-header {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
+}
+.cat-name-input {
+  flex: 1; padding: 8px 12px;
+  background: var(--surface2); border: 1px solid var(--border);
+  color: var(--text); font-family: var(--font-mono); font-size: 12px;
+  letter-spacing: 0.1em; outline: none; cursor: none;
+  transition: border-color 0.3s;
+}
+.cat-name-input:focus { border-color: var(--accent); }
+.chip-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
+.chip-tag {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 12px; background: var(--surface2);
+  border: 1px solid var(--border); font-size: 13px;
+}
+.chip-tag button {
+  background: none; border: none; color: var(--muted);
+  cursor: none; font-size: 16px; line-height: 1;
+  padding: 0; transition: color 0.2s;
+}
+.chip-tag button:hover { color: var(--danger); }
+.add-chip-row { display: flex; gap: 8px; }
+.add-chip-input {
+  flex: 1; padding: 8px 12px;
+  background: var(--surface2); border: 1px solid var(--border);
+  color: var(--text); font-size: 13px; outline: none; cursor: none;
+  transition: border-color 0.3s;
+}
+.add-chip-input:focus { border-color: var(--accent); }
+
+/* ══ EXPERIENCE / PORTFOLIO ENTRIES ══ */
+.entries-list { display: flex; flex-direction: column; gap: 20px; }
+.entry-card {
+  border: 1px solid var(--border); background: var(--bg); padding: 24px;
+}
+.entry-card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px;
+}
+.entry-num {
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--accent); letter-spacing: 0.15em;
+}
+.bullets-list { display: flex; flex-direction: column; gap: 8px; }
+.bullet-row { display: flex; gap: 8px; align-items: center; }
+.bullet-row .form-input { flex: 1; padding: 8px 12px; font-size: 13px; }
+
+/* ══ COLOR PICKER ══ */
+.color-field {
+  display: flex; gap: 10px; align-items: center;
+}
+.color-preview {
+  width: 36px; height: 36px; border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+input[type="color"] {
+  width: 40px; height: 36px; border: 1px solid var(--border);
+  background: none; padding: 0; cursor: none;
+}
+
+/* ══ TOAST ══ */
+#toast {
+  position: fixed; bottom: 32px; right: 32px; z-index: 9999;
+  display: flex; align-items: center; gap: 12px;
+  padding: 16px 24px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-left: 3px solid var(--success);
+  font-size: 14px; font-weight: 500;
+  transform: translateY(80px); opacity: 0;
+  transition: transform 0.4s var(--ease-premium), opacity 0.4s;
+  pointer-events: none;
+}
+#toast.show { transform: translateY(0); opacity: 1; }
+#toast.error { border-left-color: var(--danger); }
+.toast-icon { font-size: 18px; }
+
+/* ══ SETTINGS ══ */
+.settings-warning {
+  background: rgba(255,107,53,0.08); border-left: 2px solid var(--accent);
+  padding: 14px 18px; font-size: 13px; color: var(--muted);
+  margin-bottom: 24px;
+}
+
+/* ══ PASSWORD CHANGE ══ */
+.pw-change-row { display: flex; gap: 12px; }
+.pw-change-row .form-input { flex: 1; }
+
+/* ══ SCROLLBAR ══ */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+/* ══ RESPONSIVE ══ */
+@media (max-width: 768px) {
+  #sidebar { position: fixed; left: -100%; top: 0; bottom: 0; z-index: 200; transition: left 0.4s var(--ease-premium); }
+  #sidebar.open { left: 0; }
+  #mobile-toggle { display: flex !important; }
+  .panel-content { padding: 24px; }
+  .main-topbar { padding: 16px 20px; }
+  .form-row { grid-template-columns: 1fr; }
+}
+#mobile-toggle {
+  display: none; background: none; border: none;
+  color: var(--text); cursor: none; margin-right: 12px;
+  flex-direction: column; gap: 5px; padding: 4px;
+}
+#mobile-toggle span { display: block; width: 22px; height: 1.5px; background: currentColor; }
+</style>
+</head>
+<body>
+
+<!-- ══ CURSOR ══ -->
+<div id="cursor-dot"></div>
+<div id="cursor-ring"></div>
+
+<!-- ══ PASSWORD SCREEN ══ -->
+<div id="password-screen">
+  <div class="pw-logo">A<span>.</span>M Admin</div>
+  <div class="pw-card">
+    <div class="pw-title">Access Required</div>
+    <p class="pw-sub">Enter your password to access the CV control panel</p>
+    <input type="password" class="pw-input" id="pw-input" placeholder="Password" autocomplete="current-password">
+    <button class="pw-btn" id="pw-submit">Enter Panel</button>
+    <p class="pw-error" id="pw-error"></p>
+  </div>
+</div>
+
+<!-- ══ MAIN APP ══ -->
+<div id="app">
+  <!-- SIDEBAR -->
+  <aside id="sidebar">
+    <div class="sidebar-logo">A<span>.</span>M <small style="font-size:12px;font-weight:400;color:var(--muted)">Admin</small></div>
+    <p class="sidebar-label">Sections</p>
+    <ul class="sidebar-nav" id="sidebar-nav">
+      <li><a href="#" class="active" data-panel="hero">
+        <span class="sidebar-icon">◆</span> Hero
+      </a></li>
+      <li><a href="#" data-panel="about">
+        <span class="sidebar-icon">◇</span> About
+      </a></li>
+      <li><a href="#" data-panel="skills">
+        <span class="sidebar-icon">◈</span> Skills
+      </a></li>
+      <li><a href="#" data-panel="experience">
+        <span class="sidebar-icon">◉</span> Experience
+      </a></li>
+      <li><a href="#" data-panel="portfolio">
+        <span class="sidebar-icon">○</span> Portfolio
+      </a></li>
+      <li><a href="#" data-panel="contact">
+        <span class="sidebar-icon">✉</span> Contact
+      </a></li>
+      <li><a href="#" data-panel="settings">
+        <span class="sidebar-icon">⚙</span> Settings
+      </a></li>
+    </ul>
+    <div class="sidebar-bottom">
+      <button class="preview-btn" id="preview-btn" onclick="window.open('index.html','_blank')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Preview CV
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main id="main">
+    <div class="main-topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button id="mobile-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+        <div class="topbar-title" id="topbar-title">Hero</div>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-reset" id="reset-btn" style="display:none">↺ Reset All</button>
+      </div>
+    </div>
+
+    <!-- ══ PANEL: HERO ══ -->
+    <div class="panel-content active" id="panel-hero">
+      <div class="panel-section">
+        <div class="panel-section-title">Hero Content
+          <button class="btn btn-save" onclick="saveHero()">Save Changes</button>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input type="text" class="form-input" id="hero-name" placeholder="Alex Monroe">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Job Title (shown in initials card)</label>
+          <input type="text" class="form-input" id="hero-title" placeholder="Creative Designer">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Typewriter Roles <span class="form-hint" style="display:inline">(one per line — cycles through these)</span></label>
+          <textarea class="form-textarea" id="hero-roles" rows="4" placeholder="Creative Designer&#10;Brand Strategist&#10;Visual Storyteller"></textarea>
+          <p class="form-hint">Each line becomes one role in the typewriter animation.</p>
+        </div>
+        <button class="btn btn-save" onclick="saveHero()">Save Changes</button>
+      </div>
+    </div>
+
+    <!-- ══ PANEL: ABOUT ══ -->
+    <div class="panel-content" id="panel-about">
+      <div class="panel-section">
+        <div class="panel-section-title">About Bio
+          <button class="btn btn-save" onclick="saveAbout()">Save Changes</button>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Bio Text</label>
+          <textarea class="form-textarea" id="about-bio" rows="8" placeholder="Your bio here..."></textarea>
+          <p class="form-hint">Separate paragraphs with a blank line. You can use &lt;strong&gt; for bold text.</p>
+        </div>
+        <button class="btn btn-save" onclick="saveAbout()">Save Changes</button>
+      </div>
+    </div>
+
+    <!-- ══ PANEL: SKILLS ══ -->
+    <div class="panel-content" id="panel-skills">
+      <div class="panel-section">
+        <div class="panel-section-title">
+          Skills & Tools
+          <button class="btn btn-add" onclick="addSkillCategory()">+ Add Category</button>
+        </div>
+        <div class="chips-editor" id="skills-editor"></div>
+        <br>
+        <button class="btn btn-save" onclick="saveSkills()">Save Changes</button>
+      </div>
+    </div>
+
+    <!-- ══ PANEL: EXPERIENCE ══ -->
+    <div class="panel-content" id="panel-experience">
+      <div class="panel-section">
+        <div class="panel-section-title">
+          Work Experience
+          <button class="btn btn-add" onclick="addExperienceEntry()">+ Add Job</button>
+        </div>
+        <div class="entries-list" id="experience-editor"></div>
+        <br>
+        <button class="btn btn-save" onclick="saveExperience()">Save Changes</button>
+      </div>
+    </div>
+
+    <!-- ══ PANEL: PORTFOLIO ══ -->
+    <div class="panel-content" id="panel-portfolio">
+      <div class="panel-section">
+        <div class="panel-section-title">
+          Portfolio Projects
+          <button class="btn btn-add" onclick="addPortfolioEntry()">+ Add Project</button>
+        </div>
+        <div class="entries-list" id="portfolio-editor"></div>
+        <br>
+        <button class="btn btn-save" onclick="savePortfolio()">Save Changes</button>
+      </div>
+    </div>
+
+    <!-- ══ PANEL: CONTACT ══ -->
+    <div class="panel-content" id="panel-contact">
+      <div class="panel-section">
+        <div class="panel-section-title">Contact Details
+          <button class="btn btn-save" onclick="saveContact()">Save Changes</button>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" class="form-input" id="contact-email" placeholder="hello@alexmonroe.com">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">LinkedIn URL</label>
+            <input type="url" class="form-input" id="contact-linkedin" placeholder="https://linkedin.com/in/...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Behance URL</label>
+            <input type="url" class="form-input" id="contact-behance" placeholder="https://behance.net/...">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Instagram URL</label>
+          <input type="url" class="form-input" id="contact-instagram" placeholder="https://instagram.com/...">
+        </div>
+        <button class="btn btn-save" onclick="saveContact()">Save Changes</button>
+      </div>
+    </div>
+
+    <!-- ══ PANEL: SETTINGS ══ -->
+    <div class="panel-content" id="panel-settings">
+      <div class="panel-section">
+        <div class="panel-section-title">Change Admin Password</div>
+        <div class="settings-warning">
+          ⚠ Make sure to remember your new password. There is no recovery mechanism.
+        </div>
+        <div class="form-group">
+          <label class="form-label">Current Password</label>
+          <input type="password" class="form-input" id="pw-current" placeholder="Current password">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">New Password</label>
+            <input type="password" class="form-input" id="pw-new" placeholder="New password">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Confirm New Password</label>
+            <input type="password" class="form-input" id="pw-confirm" placeholder="Confirm new password">
+          </div>
+        </div>
+        <button class="btn btn-save" onclick="changePassword()">Update Password</button>
+      </div>
+
+      <div class="panel-section">
+        <div class="panel-section-title">Data Management</div>
+        <p style="font-size:14px;color:var(--muted);margin-bottom:20px">
+          All CV data is stored locally in your browser's localStorage. 
+          Resetting will restore all content to the built-in placeholder defaults.
+        </p>
+        <button class="btn btn-danger" onclick="confirmReset()">Reset All Content to Defaults</button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- TOAST -->
+<div id="toast">
+  <span class="toast-icon" id="toast-icon">✓</span>
+  <span id="toast-msg">Changes saved successfully</span>
+</div>
+
+<script>
+/* ══════════════════════════════════════
+   DEFAULT DATA (mirrors index.html)
+══════════════════════════════════════ */
+const DEFAULT_DATA = {
+  hero: {
+    name: "Alex Monroe",
+    title: "Creative Designer",
+    roles: ["Creative Designer", "Brand Strategist", "Visual Storyteller"]
+  },
+  about: {
+    bio: "I craft <strong>bold visual identities</strong> and digital experiences that people remember. Based in [City], working worldwide.\n\nEvery project starts with a simple idea: what story needs to be told, and how can design make it unforgettable?"
+  },
+  skills: [
+    { category: "Design Tools", items: ["Figma", "Adobe Suite", "Illustrator", "Photoshop"] },
+    { category: "Motion & 3D", items: ["After Effects", "Spline", "Cinema 4D"] },
+    { category: "Development", items: ["Framer", "Webflow", "HTML/CSS"] }
+  ],
+  experience: [
+    {
+      company: "Studio Forma",
+      role: "Lead Creative Designer",
+      dates: "2022 — Present",
+      bullets: [
+        "Led brand identity projects for 20+ global clients, increasing engagement by 45%",
+        "Built and mentored a 5-person design team across three continents",
+        "Developed a modular design system adopted across all company products"
+      ]
+    },
+    {
+      company: "Pixel & Co.",
+      role: "Senior Visual Designer",
+      dates: "2019 — 2022",
+      bullets: [
+        "Designed award-winning campaigns for Fortune 500 brands in FMCG & Tech",
+        "Produced motion graphics and brand films viewed 10M+ times across platforms",
+        "Collaborated with dev teams to implement pixel-perfect digital experiences"
+      ]
+    }
+  ],
+  portfolio: [
+    {
+      name: "VANTAGE Brand Identity",
+      category: "Brand Strategy",
+      description: "A complete visual identity system for a luxury real estate firm — from logo to environmental design.",
+      color: "#1A1A2E",
+      url: "#"
+    },
+    {
+      name: "Orbit Motion Reel",
+      category: "Motion Design",
+      description: "A 90-second brand film exploring product storytelling through kinetic typography and 3D animation.",
+      color: "#0F2027",
+      url: "#"
+    },
+    {
+      name: "Pulse App UI",
+      category: "Digital Design",
+      description: "Health & wellness app redesign — achieving a 38% uplift in user retention post-launch.",
+      color: "#1A0A0A",
+      url: "#"
+    }
+  ],
+  contact: {
+    email: "hello@alexmonroe.com",
+    linkedin: "#",
+    behance: "#",
+    instagram: "#"
+  }
+};
+
+/* ══════════════════════════════════════
+   STORAGE HELPERS
+══════════════════════════════════════ */
+const STORAGE_KEY = 'cv_data';
+const PW_KEY = 'cv_admin_pw';
+
+function getData() {
+  try {
+    const s = localStorage.getItem(STORAGE_KEY);
+    if (s) return Object.assign({}, DEFAULT_DATA, JSON.parse(s));
+  } catch(e) {}
+  return JSON.parse(JSON.stringify(DEFAULT_DATA));
+}
+
+function setData(data) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function getPassword() {
+  return localStorage.getItem(PW_KEY) || 'admin123';
+}
+
+/* ══════════════════════════════════════
+   PASSWORD GATE
+══════════════════════════════════════ */
+const pwScreen = document.getElementById('password-screen');
+const appEl = document.getElementById('app');
+const pwInput = document.getElementById('pw-input');
+const pwError = document.getElementById('pw-error');
+
+function attemptLogin() {
+  const val = pwInput.value;
+  if (!val) { pwError.textContent = 'Please enter the password.'; return; }
+  if (val === getPassword()) {
+    pwScreen.classList.add('hidden');
+    appEl.classList.add('visible');
+    document.body.style.overflow = '';
+    loadAllPanels();
+  } else {
+    pwError.textContent = 'Incorrect password. Redirecting...';
+    setTimeout(() => { window.location.href = 'index.html'; }, 1200);
+  }
+}
+
+document.getElementById('pw-submit').addEventListener('click', attemptLogin);
+pwInput.addEventListener('keydown', e => { if (e.key === 'Enter') attemptLogin(); });
+
+/* ══════════════════════════════════════
+   SIDEBAR NAVIGATION
+══════════════════════════════════════ */
+const panels = document.querySelectorAll('.panel-content');
+const navLinks = document.querySelectorAll('#sidebar-nav a');
+const topbarTitle = document.getElementById('topbar-title');
+const titleMap = {
+  hero: 'Hero', about: 'About', skills: 'Skills & Tools',
+  experience: 'Experience', portfolio: 'Portfolio', contact: 'Contact', settings: 'Settings'
+};
+
+navLinks.forEach(link => {
+  link.addEventListener('click', e => {
+    e.preventDefault();
+    const panelId = link.dataset.panel;
+    navLinks.forEach(l => l.classList.remove('active'));
+    link.classList.add('active');
+    panels.forEach(p => p.classList.remove('active'));
+    document.getElementById('panel-' + panelId).classList.add('active');
+    topbarTitle.textContent = titleMap[panelId] || '';
+    // Close mobile sidebar
+    document.getElementById('sidebar').classList.remove('open');
+  });
+});
+
+// Mobile toggle
+document.getElementById('mobile-toggle').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.toggle('open');
+});
+
+/* ══════════════════════════════════════
+   TOAST
+══════════════════════════════════════ */
+let toastTimer;
+function showToast(msg, isError = false) {
+  const toast = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  document.getElementById('toast-icon').textContent = isError ? '✕' : '✓';
+  toast.classList.toggle('error', isError);
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+/* ══════════════════════════════════════
+   LOAD ALL PANELS
+══════════════════════════════════════ */
+function loadAllPanels() {
+  const d = getData();
+  loadHero(d.hero);
+  loadAbout(d.about);
+  loadSkills(d.skills);
+  loadExperience(d.experience);
+  loadPortfolio(d.portfolio);
+  loadContact(d.contact);
+}
+
+/* ══════════════════════════════════════
+   HERO PANEL
+══════════════════════════════════════ */
+function loadHero(h) {
+  document.getElementById('hero-name').value = h.name || '';
+  document.getElementById('hero-title').value = h.title || '';
+  document.getElementById('hero-roles').value = (h.roles || []).join('\n');
+}
+function saveHero() {
+  const d = getData();
+  d.hero = {
+    name: document.getElementById('hero-name').value.trim(),
+    title: document.getElementById('hero-title').value.trim(),
+    roles: document.getElementById('hero-roles').value.split('\n').map(r => r.trim()).filter(Boolean)
+  };
+  setData(d);
+  showToast('Hero section saved!');
+}
+
+/* ══════════════════════════════════════
+   ABOUT PANEL
+══════════════════════════════════════ */
+function loadAbout(a) {
+  document.getElementById('about-bio').value = (a && a.bio) ? a.bio : '';
+}
+function saveAbout() {
+  const d = getData();
+  d.about = { bio: document.getElementById('about-bio').value };
+  setData(d);
+  showToast('About section saved!');
+}
+
+/* ══════════════════════════════════════
+   SKILLS PANEL
+══════════════════════════════════════ */
+let skillsData = [];
+
+function loadSkills(skills) {
+  skillsData = JSON.parse(JSON.stringify(skills || DEFAULT_DATA.skills));
+  renderSkillsEditor();
+}
+
+function renderSkillsEditor() {
+  const editor = document.getElementById('skills-editor');
+  editor.innerHTML = '';
+  skillsData.forEach((cat, ci) => {
+    const block = document.createElement('div');
+    block.className = 'skill-cat-block';
+    block.innerHTML = `
+      <div class="skill-cat-header">
+        <input class="cat-name-input" type="text" value="${escHtml(cat.category)}" placeholder="Category name"
+          oninput="skillsData[${ci}].category=this.value">
+        <button class="btn btn-remove" onclick="removeCat(${ci})">✕ Remove Category</button>
+      </div>
+      <div class="chip-tags" id="chip-tags-${ci}">
+        ${cat.items.map((item, ii) => `
+          <div class="chip-tag">
+            <span>${escHtml(item)}</span>
+            <button onclick="removeChip(${ci},${ii})" aria-label="Remove ${item}">×</button>
+          </div>`).join('')}
+      </div>
+      <div class="add-chip-row">
+        <input class="add-chip-input" type="text" placeholder="Add skill..." id="chip-input-${ci}">
+        <button class="btn btn-add" onclick="addChip(${ci})">+ Add</button>
+      </div>`;
+    editor.appendChild(block);
+  });
+}
+
+function addSkillCategory() {
+  skillsData.push({ category: 'New Category', items: [] });
+  renderSkillsEditor();
+}
+function removeCat(ci) {
+  skillsData.splice(ci, 1);
+  renderSkillsEditor();
+}
+function removeChip(ci, ii) {
+  skillsData[ci].items.splice(ii, 1);
+  renderSkillsEditor();
+}
+function addChip(ci) {
+  const input = document.getElementById('chip-input-' + ci);
+  const val = input.value.trim();
+  if (!val) return;
+  skillsData[ci].items.push(val);
+  renderSkillsEditor();
+  const newInput = document.getElementById('chip-input-' + ci);
+  if (newInput) newInput.focus();
+}
+
+function saveSkills() {
+  const d = getData();
+  d.skills = JSON.parse(JSON.stringify(skillsData));
+  setData(d);
+  showToast('Skills saved!');
+}
+
+/* ══════════════════════════════════════
+   EXPERIENCE PANEL
+══════════════════════════════════════ */
+let expData = [];
+
+function loadExperience(exp) {
+  expData = JSON.parse(JSON.stringify(exp || DEFAULT_DATA.experience));
+  renderExperienceEditor();
+}
+
+function renderExperienceEditor() {
+  const editor = document.getElementById('experience-editor');
+  editor.innerHTML = '';
+  expData.forEach((job, ji) => {
+    const card = document.createElement('div');
+    card.className = 'entry-card';
+    card.innerHTML = `
+      <div class="entry-card-header">
+        <span class="entry-num">JOB ${String(ji + 1).padStart(2,'0')}</span>
+        <button class="btn btn-remove" onclick="removeExp(${ji})">✕ Remove</button>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Company</label>
+          <input type="text" class="form-input" value="${escHtml(job.company)}" placeholder="Company name"
+            oninput="expData[${ji}].company=this.value">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Role / Title</label>
+          <input type="text" class="form-input" value="${escHtml(job.role)}" placeholder="Your role"
+            oninput="expData[${ji}].role=this.value">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Date Range</label>
+        <input type="text" class="form-input" value="${escHtml(job.dates)}" placeholder="2022 — Present"
+          oninput="expData[${ji}].dates=this.value">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Impact Bullet Points</label>
+        <div class="bullets-list" id="bullets-${ji}">
+          ${job.bullets.map((b, bi) => `
+            <div class="bullet-row">
+              <input type="text" class="form-input" value="${escHtml(b)}" placeholder="Bullet point..."
+                oninput="expData[${ji}].bullets[${bi}]=this.value">
+              <button class="btn btn-remove" style="white-space:nowrap" onclick="removeBullet(${ji},${bi})">✕</button>
+            </div>`).join('')}
+        </div>
+        <button class="btn btn-add" style="margin-top:8px" onclick="addBullet(${ji})">+ Add Bullet</button>
+      </div>`;
+    editor.appendChild(card);
+  });
+}
+
+function addExperienceEntry() {
+  expData.push({ company: '', role: '', dates: '', bullets: [''] });
+  renderExperienceEditor();
+}
+function removeExp(ji) {
+  expData.splice(ji, 1);
+  renderExperienceEditor();
+}
+function addBullet(ji) {
+  expData[ji].bullets.push('');
+  renderExperienceEditor();
+}
+function removeBullet(ji, bi) {
+  expData[ji].bullets.splice(bi, 1);
+  renderExperienceEditor();
+}
+function saveExperience() {
+  const d = getData();
+  d.experience = JSON.parse(JSON.stringify(expData));
+  setData(d);
+  showToast('Experience saved!');
+}
+
+/* ══════════════════════════════════════
+   PORTFOLIO PANEL
+══════════════════════════════════════ */
+let portData = [];
+
+function loadPortfolio(port) {
+  portData = JSON.parse(JSON.stringify(port || DEFAULT_DATA.portfolio));
+  renderPortfolioEditor();
+}
+
+function renderPortfolioEditor() {
+  const editor = document.getElementById('portfolio-editor');
+  editor.innerHTML = '';
+  portData.forEach((p, pi) => {
+    const card = document.createElement('div');
+    card.className = 'entry-card';
+    card.innerHTML = `
+      <div class="entry-card-header">
+        <span class="entry-num">PROJECT ${String(pi + 1).padStart(2,'0')}</span>
+        <button class="btn btn-remove" onclick="removePort(${pi})">✕ Remove</button>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Project Name</label>
+          <input type="text" class="form-input" value="${escHtml(p.name)}" placeholder="Project name"
+            oninput="portData[${pi}].name=this.value">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Category Tag</label>
+          <input type="text" class="form-input" value="${escHtml(p.category)}" placeholder="Brand Strategy"
+            oninput="portData[${pi}].category=this.value">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Short Description</label>
+        <textarea class="form-textarea" rows="2" placeholder="Brief description..."
+          oninput="portData[${pi}].description=this.value">${escHtml(p.description)}</textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Project URL</label>
+          <input type="url" class="form-input" value="${escHtml(p.url)}" placeholder="https://..."
+            oninput="portData[${pi}].url=this.value">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Card Background Color</label>
+          <div class="color-field">
+            <div class="color-preview" id="color-prev-${pi}" style="background:${p.color||'#1A1A2E'}"></div>
+            <input type="color" value="${p.color||'#1A1A2E'}"
+              oninput="portData[${pi}].color=this.value;document.getElementById('color-prev-${pi}').style.background=this.value">
+            <input type="text" class="form-input" value="${escHtml(p.color||'#1A1A2E')}" style="font-family:var(--font-mono);font-size:13px"
+              oninput="portData[${pi}].color=this.value;document.getElementById('color-prev-${pi}').style.background=this.value">
+          </div>
+        </div>
+      </div>`;
+    editor.appendChild(card);
+  });
+}
+
+function addPortfolioEntry() {
+  portData.push({ name: '', category: '', description: '', color: '#1A1A2E', url: '#' });
+  renderPortfolioEditor();
+}
+function removePort(pi) {
+  portData.splice(pi, 1);
+  renderPortfolioEditor();
+}
+function savePortfolio() {
+  const d = getData();
+  d.portfolio = JSON.parse(JSON.stringify(portData));
+  setData(d);
+  showToast('Portfolio saved!');
+}
+
+/* ══════════════════════════════════════
+   CONTACT PANEL
+══════════════════════════════════════ */
+function loadContact(c) {
+  const d = c || DEFAULT_DATA.contact;
+  document.getElementById('contact-email').value = d.email || '';
+  document.getElementById('contact-linkedin').value = d.linkedin || '';
+  document.getElementById('contact-behance').value = d.behance || '';
+  document.getElementById('contact-instagram').value = d.instagram || '';
+}
+function saveContact() {
+  const d = getData();
+  d.contact = {
+    email: document.getElementById('contact-email').value.trim(),
+    linkedin: document.getElementById('contact-linkedin').value.trim(),
+    behance: document.getElementById('contact-behance').value.trim(),
+    instagram: document.getElementById('contact-instagram').value.trim()
+  };
+  setData(d);
+  showToast('Contact details saved!');
+}
+
+/* ══════════════════════════════════════
+   SETTINGS
+══════════════════════════════════════ */
+function changePassword() {
+  const current = document.getElementById('pw-current').value;
+  const newPw = document.getElementById('pw-new').value;
+  const confirm = document.getElementById('pw-confirm').value;
+  if (current !== getPassword()) { showToast('Current password is incorrect.', true); return; }
+  if (!newPw || newPw.length < 4) { showToast('New password must be at least 4 characters.', true); return; }
+  if (newPw !== confirm) { showToast('Passwords do not match.', true); return; }
+  localStorage.setItem(PW_KEY, newPw);
+  document.getElementById('pw-current').value = '';
+  document.getElementById('pw-new').value = '';
+  document.getElementById('pw-confirm').value = '';
+  showToast('Password updated successfully!');
+}
+
+function confirmReset() {
+  if (confirm('Are you sure? This will reset ALL CV content to the default placeholder content. This cannot be undone.')) {
+    localStorage.removeItem(STORAGE_KEY);
+    loadAllPanels();
+    showToast('All content reset to defaults.');
+  }
+}
+
+/* ══════════════════════════════════════
+   CUSTOM CURSOR
+══════════════════════════════════════ */
+(function initCursor() {
+  const dot = document.getElementById('cursor-dot');
+  const ring = document.getElementById('cursor-ring');
+  let dotX = 0, dotY = 0, ringX = 0, ringY = 0;
+  document.addEventListener('mousemove', e => { dotX = e.clientX; dotY = e.clientY; });
+  function loop() {
+    ringX += (dotX - ringX) * 0.1;
+    ringY += (dotY - ringY) * 0.1;
+    dot.style.left = dotX + 'px'; dot.style.top = dotY + 'px';
+    ring.style.left = ringX + 'px'; ring.style.top = ringY + 'px';
+    requestAnimationFrame(loop);
+  }
+  loop();
+  ['a','button','input','textarea','.btn'].forEach(sel => {
+    document.querySelectorAll(sel).forEach(el => {
+      el.addEventListener('mouseenter', () => document.body.classList.add('cursor-hover'));
+      el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-hover'));
+    });
+  });
+})();
+
+/* ══════════════════════════════════════
+   CHIP INPUT — ENTER KEY SUPPORT
+══════════════════════════════════════ */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.target.classList.contains('add-chip-input')) {
+    const id = e.target.id.replace('chip-input-', '');
+    addChip(parseInt(id));
+  }
+});
+
+/* ══════════════════════════════════════
+   UTILITY
+══════════════════════════════════════ */
+function escHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+</script>
+</body>
+</html>
