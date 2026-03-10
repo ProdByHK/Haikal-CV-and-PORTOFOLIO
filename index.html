@@ -559,23 +559,164 @@ section { padding: 120px 0; }
 }
 
 /* ══════════════════════════════════════
-   RESPONSIVE
+   RESPONSIVE — 5-TIER BREAKPOINT SYSTEM
+   Desktop 1280+ | Laptop 1024–1279 |
+   Tablet/iPad 768–1023 | Mobile-L 480–767 | Mobile-S <480
 ══════════════════════════════════════ */
+
+/* ── Touch / coarse pointer: hide custom cursor ── */
+@media (pointer: coarse) {
+  #cursor-dot, #cursor-ring { display: none; }
+  body { cursor: auto; }
+  .btn-primary, .btn-outline, .contact-email-btn,
+  .nav-links a, .social-row a { cursor: pointer; }
+}
+
+/* ── LAPTOP (1024px – 1279px) ── */
+@media (max-width: 1279px) and (min-width: 1024px) {
+  #navbar, #navbar.scrolled { padding: 20px 40px; }
+  .container { padding: 0 40px; }
+  .about-grid { gap: 48px; }
+  .initials-block { width: 260px; height: 320px; }
+  .portfolio-grid { gap: 18px; }
+  .project-color-block { height: 180px; }
+}
+
+/* ── TABLET / iPAD (768px – 1023px) ── */
+@media (max-width: 1023px) and (min-width: 768px) {
+  #navbar, #navbar.scrolled { padding: 18px 32px; }
+  .nav-links { gap: 20px; }
+  .nav-links a { font-size: 12px; }
+  .container { padding: 0 32px; }
+  section { padding: 90px 0; }
+
+  /* Hero */
+  #hero { padding: 100px 32px 70px; }
+  .hero-cta-group { gap: 12px; }
+
+  /* About */
+  .about-grid { grid-template-columns: 1fr 1fr; gap: 40px; }
+  .about-bio { font-size: 16px; }
+  .stat-number { font-size: 32px; }
+  .initials-block { width: 100%; height: 300px; }
+  .initials-text { font-size: 80px; }
+
+  /* Portfolio */
+  .portfolio-grid { grid-template-columns: 1fr 1fr; gap: 18px; }
+  .project-color-block { height: 180px; }
+  .project-name { font-size: 18px; }
+
+  /* Contact */
+  .contact-sub { font-size: 16px; }
+}
+
+/* ── TABLET / iPAD Portrait: hide nav links, show hamburger ── */
 @media (max-width: 900px) {
-  #navbar, #navbar.scrolled { padding: 20px 24px; }
+  #navbar, #navbar.scrolled { padding: 18px 24px; }
   .nav-links { display: none; }
   .nav-hamburger { display: flex; }
   .container { padding: 0 24px; }
   section { padding: 80px 0; }
-  .about-grid { grid-template-columns: 1fr; gap: 60px; }
+
+  /* About: stack on narrower tablets */
+  .about-grid { grid-template-columns: 1fr; gap: 48px; }
   .about-visual { order: -1; }
-  .initials-block { width: 100%; height: 280px; }
-  .portfolio-grid { grid-template-columns: 1fr 1fr; }
+  .initials-block { width: 100%; max-width: 480px; height: 280px; margin: 0 auto; }
+
+  /* Portfolio: 2 col on tablet portrait */
+  .portfolio-grid { grid-template-columns: 1fr 1fr; gap: 16px; }
 }
-@media (max-width: 600px) {
-  .portfolio-grid { grid-template-columns: 1fr; }
-  .hero-cta-group { flex-direction: column; align-items: center; }
-  .about-stats { grid-template-columns: 1fr; }
+
+/* ── MOBILE LARGE (480px – 767px) ── */
+@media (max-width: 767px) and (min-width: 480px) {
+  #navbar, #navbar.scrolled { padding: 16px 20px; }
+  .nav-logo { font-size: 20px; }
+  .container { padding: 0 20px; }
+  section { padding: 70px 0; }
+
+  /* Hero */
+  #hero { padding: 90px 20px 60px; }
+  .hero-cta-group { flex-direction: column; align-items: center; gap: 12px; }
+  .btn-primary, .btn-outline { width: 100%; max-width: 280px; text-align: center; padding: 14px 24px; }
+
+  /* Section headings */
+  .section-title { margin-bottom: 40px; }
+
+  /* About */
+  .about-grid { grid-template-columns: 1fr; gap: 40px; }
+  .about-visual { order: -1; }
+  .initials-block { width: 100%; height: 240px; }
+  .about-bio { font-size: 16px; }
+  .about-stats { grid-template-columns: 1fr 1fr; gap: 16px; }
+  .stat-number { font-size: 32px; }
+
+  /* Timeline */
+  .timeline { padding-left: 32px; }
+  .timeline-entry::before { left: -36px; }
+  .timeline-role { font-size: 21px; }
+  .timeline-bullets li { font-size: 14px; }
+
+  /* Portfolio: single column */
+  .portfolio-grid { grid-template-columns: 1fr; gap: 16px; }
+  .project-color-block { height: 200px; }
+
+  /* Contact */
+  .contact-email-btn { padding: 16px 28px; font-size: 14px; }
+  .contact-sub { font-size: 16px; }
+}
+
+/* ── MOBILE SMALL (< 480px) ── */
+@media (max-width: 479px) {
+  #navbar, #navbar.scrolled { padding: 14px 16px; }
+  .nav-logo { font-size: 18px; }
+  .container { padding: 0 16px; }
+  section { padding: 60px 0; }
+
+  /* Hero */
+  #hero { padding: 80px 16px 56px; }
+  .hero-cta-group { flex-direction: column; align-items: center; gap: 10px; margin-top: 36px; }
+  .btn-primary, .btn-outline { width: 100%; max-width: 260px; text-align: center; padding: 13px 20px; }
+  .hero-subtitle { flex-wrap: wrap; justify-content: center; height: auto; gap: 4px; }
+  .scroll-indicator { bottom: 20px; }
+
+  /* Section headings */
+  .section-title { margin-bottom: 32px; }
+
+  /* About */
+  .about-grid { grid-template-columns: 1fr; gap: 36px; }
+  .about-visual { order: -1; }
+  .initials-block { width: 100%; height: 200px; }
+  .initials-text { font-size: 64px; }
+  .about-bio { font-size: 15px; line-height: 1.7; }
+  .about-stats { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .stat-number { font-size: 28px; }
+  .stat-label { font-size: 11px; }
+
+  /* Skills */
+  .chip { padding: 8px 14px; font-size: 12px; }
+
+  /* Experience */
+  .timeline { padding-left: 28px; }
+  .timeline-entry::before { left: -32px; width: 7px; height: 7px; }
+  .timeline-role { font-size: 19px; }
+  .timeline-bullet li { font-size: 13px; }
+  .timeline-entry { margin-bottom: 40px; }
+
+  /* Portfolio */
+  .portfolio-grid { grid-template-columns: 1fr; gap: 14px; }
+  .project-color-block { height: 180px; }
+  .project-body { padding: 18px; }
+  .project-name { font-size: 17px; }
+
+  /* Contact */
+  .contact-email-btn { padding: 14px 20px; font-size: 13px; width: 100%; justify-content: center; }
+  .contact-sub { font-size: 15px; margin-bottom: 36px; }
+  .social-row { gap: 14px; }
+  .contact-footer { font-size: 11px; margin-top: 48px; }
+
+  /* Nav drawer narrower */
+  #nav-drawer { width: 240px; gap: 32px; }
+  #nav-drawer a { font-size: 24px; }
 }
 </style>
 </head>
