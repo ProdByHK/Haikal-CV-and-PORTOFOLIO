@@ -1162,10 +1162,13 @@ function startTypewriter(roles) {
   const ctx = canvas.getContext('2d');
   let W, H, shapes = [], mouse = { x: -9999, y: -9999 };
 
+  const hero = document.getElementById('hero');
+
   function resize() {
-    W = canvas.width = canvas.offsetWidth;
-    H = canvas.height = canvas.offsetHeight;
+    W = canvas.width  = hero.offsetWidth  || window.innerWidth;
+    H = canvas.height = hero.offsetHeight || window.innerHeight;
   }
+
 
   function Shape(x, y, type) {
     this.x = x; this.y = y; this.type = type;
