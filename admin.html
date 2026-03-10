@@ -938,6 +938,8 @@ function loadHero(h) {
   document.getElementById('hero-name').value = h.name || '';
   document.getElementById('hero-title').value = h.title || '';
   document.getElementById('hero-roles').value = (h.roles || []).join('\n');
+  // Update admin tab title
+  if (h.name) document.title = h.name + ' — Admin';
 }
 async function saveHero() {
   const d = await getData();
