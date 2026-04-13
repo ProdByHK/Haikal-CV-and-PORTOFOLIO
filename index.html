@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Alex Monroe — Creative Designer</title>
-<meta name="description" content="Alex Monroe — Creative Designer, Brand Strategist, and Visual Storyteller. Portfolio and CV.">
+<title>haikal pasha — Creative Designer</title>
+<meta name="description" content="haikal pasha — Creative Designer, Brand Strategist, and Visual Storyteller. Portfolio and CV.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -756,7 +756,7 @@ section { padding: 120px 0; }
   <canvas id="hero-canvas"></canvas>
   <div class="hero-content">
     <p class="hero-eyebrow" id="hero-eyebrow">Portfolio — 2024</p>
-    <h1 id="hero-name" aria-label="Alex Monroe"></h1>
+    <h1 id="hero-name" aria-label="haikal pasha"></h1>
     <div class="hero-subtitle">
       <span class="typewriter-prefix">I am a </span>
       <span id="typewriter-text"></span>
@@ -792,7 +792,7 @@ section { padding: 120px 0; }
                style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:2">
           <div class="initials-text" id="about-initials">AM</div>
           <div class="initials-overlay">
-            <div class="initials-name" id="about-name-card">Alex Monroe</div>
+            <div class="initials-name" id="about-name-card">haikal pasha</div>
             <div class="initials-role" id="about-role-card">Creative Designer</div>
           </div>
         </div>
@@ -840,11 +840,11 @@ section { padding: 120px 0; }
     <p class="contact-sub" id="contact-sub">Have a project in mind? I'd love to collaborate and bring your vision to life.</p>
     <a href="#" class="contact-email-btn hoverable" id="contact-email-link" aria-label="Send email">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>
-      <span id="contact-email-text">hello@alexmonroe.com</span>
+      <span id="contact-email-text">haikalpasha207@gmail.com</span>
     </a>
     <ul class="social-row" id="social-row"></ul>
     <div class="contact-footer">
-      <span id="footer-name">Alex Monroe</span> &nbsp;·&nbsp; © <span id="footer-year">2024</span> &nbsp;·&nbsp; All rights reserved
+      <span id="footer-name">haikal pasha</span> &nbsp;·&nbsp; © <span id="footer-year">2024</span> &nbsp;·&nbsp; All rights reserved
     </div>
   </div>
 </section>
@@ -861,7 +861,7 @@ const UPSTASH_READ_TOKEN = 'ggAAAAAAAQa3AAIgcDFSvMPD0slV8VMP6Nl7Q-PHYqOAu_CFCVSr
 ══════════════════════════════════════ */
 const DEFAULT_DATA = {
   hero: {
-    name: "Alex Monroe",
+    name: "haikal pasha",
     title: "Creative Designer",
     roles: ["Creative Designer", "Brand Strategist", "Visual Storyteller"]
   },
@@ -921,7 +921,7 @@ const DEFAULT_DATA = {
     }
   ],
   contact: {
-    email: "hello@alexmonroe.com",
+    email: "haikalpasha207@gmail.com",
     socials: [
       { platform: "LinkedIn",  icon: "in",  url: "#" },
       { platform: "Behance",   icon: "Bē",  url: "#" },
@@ -962,7 +962,7 @@ async function renderAll() {
 function renderHero(h) {
   // Name spans
   const nameEl = document.getElementById('hero-name');
-  const name = h.name || 'Alex Monroe';
+  const name = h.name || 'haikal pasha';
   nameEl.setAttribute('aria-label', name);
   nameEl.innerHTML = '';
   let delay = 0.4;
@@ -1088,8 +1088,8 @@ function renderPortfolio(projects) {
 function renderContact(c) {
   const d = c || DEFAULT_DATA.contact;
   const emailLink = document.getElementById('contact-email-link');
-  emailLink.href = 'mailto:' + (d.email || 'hello@alexmonroe.com');
-  document.getElementById('contact-email-text').textContent = d.email || 'hello@alexmonroe.com';
+  emailLink.href = 'mailto:' + (d.email || 'haikalpasha207@gmail.com');
+  document.getElementById('contact-email-text').textContent = d.email || 'haikalpasha207@gmail.com';
 
   // Build socials array — support new format and legacy flat keys
   let socials = [];
