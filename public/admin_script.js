@@ -1,9 +1,7 @@
 
 /* ══════════════════════════════════════
-   UPSTASH CONFIG
+   UPSTASH CONFIG (Moved to server-side .env.local)
 ══════════════════════════════════════ */
-const UPSTASH_URL = 'https://exciting-woodcock-67255.upstash.io';
-const UPSTASH_WRITE_TOKEN = 'gQAAAAAAAQa3AAIncDEzNzkzYzE5NTdjM2M0M2RlOTI3MTYxZjRmMDk3NmQ5NXAxNjcyNTU';
 
 /* ══════════════════════════════════════
    DEFAULT DATA (mirrors index.html)
@@ -86,9 +84,7 @@ const PW_KEY = 'cv_admin_pw';
 
 async function getData() {
   try {
-    const res = await fetch(`${UPSTASH_URL}/get/cv_data`, {
-      headers: { Authorization: `Bearer ${UPSTASH_WRITE_TOKEN}` }
-    });
+    const res = await fetch(`/api/cv`);
     const json = await res.json();
     if (json.result) {
       return Object.assign({}, DEFAULT_DATA, JSON.parse(json.result));
@@ -98,10 +94,9 @@ async function getData() {
 }
 
 async function setData(data) {
-  await fetch(`${UPSTASH_URL}/set/cv_data`, {
+  await fetch(`/api/cv`, {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${UPSTASH_WRITE_TOKEN}`,
       'Content-Type': 'text/plain'
     },
     body: JSON.stringify(data)

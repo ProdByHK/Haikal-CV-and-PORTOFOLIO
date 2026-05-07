@@ -1,9 +1,7 @@
 
 /* ══════════════════════════════════════
-   UPSTASH CONFIG (read-only token for public page)
+   UPSTASH CONFIG (Moved to server-side .env.local)
 ══════════════════════════════════════ */
-const UPSTASH_URL = 'https://exciting-woodcock-67255.upstash.io';
-const UPSTASH_READ_TOKEN = 'ggAAAAAAAQa3AAIgcDFSvMPD0slV8VMP6Nl7Q-PHYqOAu_CFCVSruprTlrIuwg';
 
 /* ══════════════════════════════════════
    DEFAULT DATA
@@ -84,9 +82,7 @@ const DEFAULT_DATA = {
 ══════════════════════════════════════ */
 async function getData() {
   try {
-    const res = await fetch(`${UPSTASH_URL}/get/cv_data`, {
-      headers: { Authorization: `Bearer ${UPSTASH_READ_TOKEN}` }
-    });
+    const res = await fetch(`/api/cv`);
     const json = await res.json();
     if (json.result) {
       return Object.assign({}, DEFAULT_DATA, JSON.parse(json.result));
